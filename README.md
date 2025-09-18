@@ -1,2 +1,2 @@
 # LeetCode
-LeetCode solved questions.!!!
+LeetCode solved questions in Java.!!!
