@@ -1,3 +1,5 @@
+//Java code:-
+
 class Solution {
     public String freqAlphabets(String s) {
         
