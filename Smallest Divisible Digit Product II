@@ -1,1 +1,153 @@
+import java.util.Arrays;
 
+class Solution {
+    // Prime factor powers for each digit '1'..'9': {power of 2, 3, 5, 7}
+    private static final int[][] FACTORS = {
+        {0, 0, 0, 0}, // '0' placeholder
+        {0, 0, 0, 0}, // '1'
+        {1, 0, 0, 0}, // '2'
+        {0, 1, 0, 0}, // '3'
+        {2, 0, 0, 0}, // '4'
+        {0, 0, 1, 0}, // '5'
+        {1, 1, 0, 0}, // '6'
+        {0, 0, 0, 1}, // '7'
+        {3, 0, 0, 0}, // '8'
+        {0, 2, 0, 0}  // '9'
+    };
+
+    public String smallestNumber(String num, long t) {
+        int reqA = 0, reqB = 0, reqC = 0, reqD = 0;
+
+        // Step 1: Factorize t into prime powers of 2, 3, 5, 7
+        while (t % 2 == 0) { reqA++; t /= 2; }
+        while (t % 3 == 0) { reqB++; t /= 3; }
+        while (t % 5 == 0) { reqC++; t /= 5; }
+        while (t % 7 == 0) { reqD++; t /= 7; }
+
+        // If t contains prime factors > 7, no digit product can match it
+        if (t > 1) {
+            return "-1";
+        }
+
+        int N = num.length();
+        int[][] pref = new int[N + 1][4];
+        int zeroIdx = N;
+
+        // Precompute prefix prime factor counts & find first '0'
+        for (int k = 0; k < N; k++) {
+            char ch = num.charAt(k);
+            if (ch == '0') {
+                zeroIdx = k;
+                break;
+            }
+            int d = ch - '0';
+            pref[k + 1][0] = pref[k][0] + FACTORS[d][0];
+            pref[k + 1][1] = pref[k][1] + FACTORS[d][1];
+            pref[k + 1][2] = pref[k][2] + FACTORS[d][2];
+            pref[k + 1][3] = pref[k][3] + FACTORS[d][3];
+        }
+
+        // Step 2: Check if num itself is valid
+        if (zeroIdx == N) {
+            if (pref[N][0] >= reqA && pref[N][1] >= reqB && pref[N][2] >= reqC && pref[N][3] >= reqD) {
+                return num;
+            }
+        }
+
+        // Step 3: Find largest matching prefix of same length N
+        int bestI = -1;
+        int bestD = -1;
+
+        // Bound start index to N - 1 to prevent IndexOutOfBoundsException
+        int startIdx = Math.min(zeroIdx, N - 1);
+
+        for (int i = startIdx; i >= 0; i--) {
+            int startDigit = (i == zeroIdx && zeroIdx < N) ? 1 : (num.charAt(i) - '0') + 1;
+            for (int d = startDigit; d <= 9; d++) {
+                int remA = reqA - pref[i][0] - FACTORS[d][0];
+                int remB = reqB - pref[i][1] - FACTORS[d][1];
+                int remC = reqC - pref[i][2] - FACTORS[d][2];
+                int remD = reqD - pref[i][3] - FACTORS[d][3];
+
+                if (N - 1 - i >= minLen(remA, remB, remC, remD)) {
+                    bestI = i;
+                    bestD = d;
+                    break;
+                }
+            }
+            if (bestI != -1) {
+                break;
+            }
+        }
+
+        // Step 4: Reconstruct result
+        StringBuilder sb = new StringBuilder();
+
+        if (bestI != -1) {
+            // Construct length N answer
+            sb.append(num, 0, bestI);
+            sb.append(bestD);
+
+            int curA = pref[bestI][0] + FACTORS[bestD][0];
+            int curB = pref[bestI][1] + FACTORS[bestD][1];
+            int curC = pref[bestI][2] + FACTORS[bestD][2];
+            int curD = pref[bestI][3] + FACTORS[bestD][3];
+
+            greedyFill(sb, curA, curB, curC, curD, reqA, reqB, reqC, reqD, N);
+        } else {
+            // Construct answer with length L > N
+            int minNeeded = minLen(reqA, reqB, reqC, reqD);
+            int totalLen = Math.max(N + 1, minNeeded);
+
+            greedyFill(sb, 0, 0, 0, 0, reqA, reqB, reqC, reqD, totalLen);
+        }
+
+        return sb.toString();
+    }
+
+    // Minimum digits needed to supply required remaining prime factor counts
+    private int minLen(int a, int b, int c, int d) {
+        a = Math.max(0, a);
+        b = Math.max(0, b);
+        c = Math.max(0, c);
+        d = Math.max(0, d);
+
+        int count = c + d + (b / 2) + (a / 3);
+        int remA = a % 3;
+        int remB = b % 2;
+
+        int extra;
+        if (remA == 0 && remB == 0) {
+            extra = 0;
+        } else if (remA == 2 && remB == 1) {
+            extra = 2;
+        } else {
+            extra = 1;
+        }
+
+        return count + extra;
+    }
+
+    // Greedily pick the smallest valid digit at each step
+    private void greedyFill(StringBuilder sb, int curA, int curB, int curC, int curD,
+                            int reqA, int reqB, int reqC, int reqD, int targetLen) {
+        while (sb.length() < targetLen) {
+            int remPos = targetLen - 1 - sb.length();
+            for (int cand = 1; cand <= 9; cand++) {
+                int remA = reqA - curA - FACTORS[cand][0];
+                int remB = reqB - curB - FACTORS[cand][1];
+                int remC = reqC - curC - FACTORS[cand][2];
+                int remD = reqD - curD - FACTORS[cand][3];
+
+                if (remPos >= minLen(remA, remB, remC, remD)) {
+                    sb.append(cand);
+                    curA += FACTORS[cand][0];
+                    curB += FACTORS[cand][1];
+                    curC += FACTORS[cand][2];
+                    curD += FACTORS[cand][3];
+                    break;
+                }
+            }
+        }
+    }
+}
