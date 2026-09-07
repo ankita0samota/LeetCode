@@ -1,1 +1,24 @@
+class Solution {
+    public int distinctSubseqII(String s) {
+        int MOD = 1000000007;
+        long[] dp = new long[26];
 
+        for (char c : s.toCharArray()) {
+            long sum = 1;
+
+            for (long x : dp) {
+                sum = (sum + x) % MOD;
+            }
+
+            dp[c - 'a'] = sum;
+        }
+
+        long ans = 0;
+
+        for (long x : dp) {
+            ans = (ans + x) % MOD;
+        }
+
+        return (int) ans;
+    }
+}
