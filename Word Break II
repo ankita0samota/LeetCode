@@ -1,1 +1,47 @@
+import java.util.*;
 
+class Solution {
+    private String s;
+    private Set<String> set;
+    private Map<Integer, List<String>> memo;
+
+    public List<String> wordBreak(String s, List<String> wordDict) {
+        this.s = s;
+        this.set = new HashSet<>(wordDict);
+        this.memo = new HashMap<>();
+
+        return dfs(0);
+    }
+
+    private List<String> dfs(int start) {
+        if (memo.containsKey(start)) {
+            return memo.get(start);
+        }
+
+        List<String> result = new ArrayList<>();
+
+        if (start == s.length()) {
+            result.add("");
+            return result;
+        }
+
+        for (int end = start + 1; end <= s.length(); end++) {
+            String word = s.substring(start, end);
+
+            if (!set.contains(word)) {
+                continue;
+            }
+
+            for (String next : dfs(end)) {
+                if (next.isEmpty()) {
+                    result.add(word);
+                } else {
+                    result.add(word + " " + next);
+                }
+            }
+        }
+
+        memo.put(start, result);
+        return result;
+    }
+}
