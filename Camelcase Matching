@@ -1,1 +1,27 @@
+import java.util.*;
 
+class Solution {
+    public List<Boolean> camelMatch(String[] queries, String pattern) {
+        List<Boolean> result = new ArrayList<>();
+
+        for (String query : queries) {
+            int j = 0;
+            boolean valid = true;
+
+            for (int i = 0; i < query.length(); i++) {
+                char c = query.charAt(i);
+
+                if (j < pattern.length() && c == pattern.charAt(j)) {
+                    j++;
+                } else if (Character.isUpperCase(c)) {
+                    valid = false;
+                    break;
+                }
+            }
+
+            result.add(valid && j == pattern.length());
+        }
+
+        return result;
+    }
+}
