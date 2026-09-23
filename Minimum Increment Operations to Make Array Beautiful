@@ -1,1 +1,14 @@
+class Solution {
+    public long minIncrementOperations(int[] nums, int k) {
+        long a = 0, b = 0, c = 0;
 
+        for (int num : nums) {
+            long current = Math.min(a, Math.min(b, c)) + Math.max(0L, (long) k - num);
+            a = b;
+            b = c;
+            c = current;
+        }
+
+        return Math.min(a, Math.min(b, c));
+    }
+}
