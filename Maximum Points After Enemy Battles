@@ -1,1 +1,25 @@
+import java.util.*;
 
+class Solution {
+    public long maximumPoints(int[] enemyEnergies, int currentEnergy) {
+        Arrays.sort(enemyEnergies);
+
+        int min = enemyEnergies[0];
+
+        if (currentEnergy < min) {
+            return 0;
+        }
+
+        long points = 0;
+
+        for (int i = enemyEnergies.length - 1; i > 0; i--) {
+            points += currentEnergy / min;
+            currentEnergy %= min;
+            currentEnergy += enemyEnergies[i];
+        }
+
+        points += currentEnergy / min;
+
+        return points;
+    }
+}
