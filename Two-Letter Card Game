@@ -1,1 +1,46 @@
+class Solution {
+    public int score(String[] cards, char x) {
+        int[] first = new int[10];
+        int[] second = new int[10];
+        int same = 0;
 
+        for (String card : cards) {
+            if (card.charAt(0) == x && card.charAt(1) == x) {
+                same++;
+            } else if (card.charAt(0) == x) {
+                first[card.charAt(1) - 'a']++;
+            } else if (card.charAt(1) == x) {
+                second[card.charAt(0) - 'a']++;
+            }
+        }
+
+        int[] a = getPairs(first);
+        int[] b = getPairs(second);
+
+        int pairs = a[0] + b[0];
+        int left = a[1] + b[1];
+
+        int useSame = Math.min(same, left);
+        pairs += useSame;
+        same -= useSame;
+
+        pairs += Math.min(same / 2, a[0] + b[0]);
+
+        return pairs;
+    }
+
+    private int[] getPairs(int[] count) {
+        int total = 0;
+        int max = 0;
+
+        for (int x : count) {
+            total += x;
+            max = Math.max(max, x);
+        }
+
+        int pairs = Math.min(total / 2, total - max);
+        int left = total - 2 * pairs;
+
+        return new int[]{pairs, left};
+    }
+}
