@@ -1,1 +1,30 @@
+import java.util.*;
 
+class Solution {
+    public List<String> braceExpansionII(String expression) {
+        TreeSet<String> result = new TreeSet<>();
+        dfs(expression, result);
+        return new ArrayList<>(result);
+    }
+
+    private void dfs(String s, Set<String> result) {
+        int close = s.indexOf('}');
+
+        if (close == -1) {
+            result.add(s);
+            return;
+        }
+
+        int open = s.lastIndexOf('{', close);
+
+        String left = s.substring(0, open);
+        String right = s.substring(close + 1);
+
+        String inside = s.substring(open + 1, close);
+        String[] parts = inside.split(",");
+
+        for (String part : parts) {
+            dfs(left + part + right, result);
+        }
+    }
+}
