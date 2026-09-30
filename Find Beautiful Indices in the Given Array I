@@ -1,1 +1,31 @@
+import java.util.*;
 
+class Solution {
+    public List<Integer> beautifulIndices(String s, String a, String b, int k) {
+        List<Integer> x = new ArrayList<>();
+        List<Integer> y = new ArrayList<>();
+
+        for (int i = 0; i + a.length() <= s.length(); i++) {
+            if (s.startsWith(a, i)) x.add(i);
+        }
+
+        for (int i = 0; i + b.length() <= s.length(); i++) {
+            if (s.startsWith(b, i)) y.add(i);
+        }
+
+        List<Integer> ans = new ArrayList<>();
+        int j = 0;
+
+        for (int i : x) {
+            while (j < y.size() && y.get(j) < i - k) {
+                j++;
+            }
+
+            if (j < y.size() && y.get(j) <= i + k) {
+                ans.add(i);
+            }
+        }
+
+        return ans;
+    }
+}
