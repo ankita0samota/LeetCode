@@ -1,1 +1,36 @@
+import java.util.*;
 
+class Solution {
+    long fuel = 0;
+
+    public long minimumFuelCost(int[][] roads, int seats) {
+        int n = roads.length + 1;
+        List<Integer>[] graph = new ArrayList[n];
+
+        for (int i = 0; i < n; i++) {
+            graph[i] = new ArrayList<>();
+        }
+
+        for (int[] road : roads) {
+            graph[road[0]].add(road[1]);
+            graph[road[1]].add(road[0]);
+        }
+
+        dfs(0, -1, graph, seats);
+        return fuel;
+    }
+
+    private long dfs(int node, int parent, List<Integer>[] graph, int seats) {
+        long people = 1;
+
+        for (int next : graph[node]) {
+            if (next == parent) continue;
+
+            long childPeople = dfs(next, node, graph, seats);
+            people += childPeople;
+            fuel += (childPeople + seats - 1) / seats;
+        }
+
+        return people;
+    }
+}
