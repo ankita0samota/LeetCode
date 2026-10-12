@@ -1,7 +1,7 @@
 import java.util.*;
 
 class Solution {
-    public int maxSumOfSquares(int[] nums, int k) {
+    public int maxSum(List<Integer> nums, int k) {
         int[] count = new int[31];
 
         for (int x : nums) {
@@ -20,7 +20,7 @@ class Solution {
 
             for (int bit = 30; bit >= 0; bit--) {
                 if (count[bit] > 0) {
-                    x |= 1L << bit;
+                    x |= (1L << bit);
                     count[bit]--;
                 }
             }
