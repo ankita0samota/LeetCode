@@ -1,1 +1,72 @@
+import java.util.*;
 
+class Solution {
+    static final long MOD = 1_000_000_007L;
+
+    public int sumCounts(int[] nums) {
+        int n = nums.length;
+        Map<Integer, Integer> last = new HashMap<>();
+
+        long[] tree = new long[4 * n];
+        long[] lazy = new long[4 * n];
+        long[] sum = new long[4 * n];
+
+        long ans = 0;
+
+        for (int i = 0; i < n; i++) {
+            int prev = last.getOrDefault(nums[i], -1);
+
+            update(1, 0, n - 1, prev + 1, i, tree, lazy, sum);
+
+            ans = (ans + tree[1]) % MOD;
+            last.put(nums[i], i);
+        }
+
+        return (int) ans;
+    }
+
+    private void update(int node, int l, int r, int ql, int qr,
+                        long[] tree, long[] lazy, long[] sum) {
+        if (ql > r || qr < l) return;
+
+        if (ql <= l && r <= qr) {
+            long len = r - l + 1;
+            tree[node] += 2 * sum[node] + len;
+            sum[node] += len;
+            lazy[node]++;
+            return;
+        }
+
+        push(node, l, r, tree, lazy, sum);
+
+        int mid = (l + r) / 2;
+
+        update(node * 2, l, mid, ql, qr, tree, lazy, sum);
+        update(node * 2 + 1, mid + 1, r, ql, qr, tree, lazy, sum);
+
+        sum[node] = sum[node * 2] + sum[node * 2 + 1];
+        tree[node] = (tree[node * 2] + tree[node * 2 + 1]) % MOD;
+    }
+
+    private void push(int node, int l, int r,
+                      long[] tree, long[] lazy, long[] sum) {
+        if (lazy[node] == 0 || l == r) return;
+
+        int mid = (l + r) / 2;
+        apply(node * 2, l, mid, lazy[node], tree, lazy, sum);
+        apply(node * 2 + 1, mid + 1, r, lazy[node], tree, lazy, sum);
+
+        lazy[node] = 0;
+    }
+
+    private void apply(int node, int l, int r, long value,
+                       long[] tree, long[] lazy, long[] sum) {
+        long len = r - l + 1;
+
+        tree[node] = (tree[node] + 2 * value * sum[node]
+                + value * value % MOD * len) % MOD;
+
+        sum[node] += value * len;
+        lazy[node] += value;
+    }
+}
