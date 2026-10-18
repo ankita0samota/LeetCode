@@ -1,1 +1,42 @@
+import java.util.*;
 
+class Solution {
+    public String nearestPalindromic(String n) {
+        long num = Long.parseLong(n);
+        int len = n.length();
+
+        Set<Long> candidates = new HashSet<>();
+
+        candidates.add((long) Math.pow(10, len - 1) - 1);
+        candidates.add((long) Math.pow(10, len) + 1);
+
+        long prefix = Long.parseLong(n.substring(0, (len + 1) / 2));
+
+        for (long p = prefix - 1; p <= prefix + 1; p++) {
+            String s = String.valueOf(p);
+            String palindrome;
+
+            if (len % 2 == 0) {
+                palindrome = s + new StringBuilder(s).reverse();
+            } else {
+                palindrome = s + new StringBuilder(s.substring(0, s.length() - 1)).reverse();
+            }
+
+            candidates.add(Long.parseLong(palindrome));
+        }
+
+        candidates.remove(num);
+
+        long best = -1;
+
+        for (long candidate : candidates) {
+            if (best == -1 ||
+                Math.abs(candidate - num) < Math.abs(best - num) ||
+                (Math.abs(candidate - num) == Math.abs(best - num) && candidate < best)) {
+                best = candidate;
+            }
+        }
+
+        return String.valueOf(best);
+    }
+}
