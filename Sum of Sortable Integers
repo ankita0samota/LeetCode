@@ -1,1 +1,72 @@
-
+public class Solution {
+    public int sortableIntegers(int[] nums) {
+        int n = nums.length;
+        
+        // 1. Precompute prefix maximums
+        int[] prefMax = new int[n];
+        prefMax[0] = nums[0];
+        for (int i = 1; i < n; i++) {
+            prefMax[i] = Math.max(prefMax[i - 1], nums[i]);
+        }
+        
+        // 2. Precompute suffix minimums
+        int[] suffMin = new int[n];
+        suffMin[n - 1] = nums[n - 1];
+        for (int i = n - 2; i >= 0; i--) {
+            suffMin[i] = Math.min(suffMin[i + 1], nums[i]);
+        }
+        
+        // 3. Precompute prefix drop counts (descents where nums[i-1] > nums[i])
+        int[] prefDrop = new int[n];
+        for (int i = 1; i < n; i++) {
+            prefDrop[i] = prefDrop[i - 1] + (nums[i - 1] > nums[i] ? 1 : 0);
+        }
+        
+        int totalSum = 0;
+        
+        // 4. Iterate over all divisors k of n
+        for (int k = 1; k <= n; k++) {
+            if (n % k != 0) continue;
+            
+            if (isSortable(nums, k, prefMax, suffMin, prefDrop)) {
+                totalSum += k;
+            }
+        }
+        
+        return totalSum;
+    }
+    
+    private boolean isSortable(int[] nums, int k, int[] prefMax, int[] suffMin, int[] prefDrop) {
+        int n = nums.length;
+        
+        // Check global block ordering and individual block rotatability
+        for (int start = 0; start < n; start += k) {
+            int end = start + k - 1;
+            
+            // Check global condition: max of current block <= min of next block
+            if (end + 1 < n) {
+                if (prefMax[end] > suffMin[end + 1]) {
+                    return false;
+                }
+            }
+            
+            // Check internal block rotatability: at most 1 descent per block (including wrap-around)
+            int internalDrops = 0;
+            if (start < end) {
+                // Number of drops strictly inside the block [start, end]
+                internalDrops = prefDrop[end] - prefDrop[start];
+            }
+            
+            // Circular drop from the last element to the first element of the block
+            if (nums[end] > nums[start]) {
+                internalDrops++;
+            }
+            
+            if (internalDrops > 1) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+}
