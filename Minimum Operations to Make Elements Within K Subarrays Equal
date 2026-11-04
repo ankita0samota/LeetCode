@@ -1,1 +1,93 @@
+import java.util.*;
 
+public class Solution {
+    private static class MultiSet {
+        TreeMap<Integer, Integer> map = new TreeMap<>();
+        long sum = 0;
+        int size = 0;
+
+        void add(int val) {
+            map.put(val, map.getOrDefault(val, 0) + 1);
+            sum += val;
+            size++;
+        }
+
+        void remove(int val) {
+            int count = map.get(val);
+            if (count == 1) {
+                map.remove(val);
+            } else {
+                map.put(val, count - 1);
+            }
+            sum -= val;
+            size--;
+        }
+
+        int lastKey() {
+            return map.lastKey();
+        }
+
+        int firstKey() {
+            return map.firstKey();
+        }
+
+        boolean isEmpty() {
+            return map.isEmpty();
+        }
+    }
+
+    public long minOperations(int[] nums, int x, int k) {
+        int n = nums.length;
+        List<Long> minOps = new ArrayList<>();
+        
+        MultiSet lower = new MultiSet();
+        MultiSet upper = new MultiSet();
+        
+        for (int i = 0; i < n; i++) {
+            if (lower.isEmpty() || nums[i] <= lower.lastKey()) {
+                lower.add(nums[i]);
+            } else {
+                upper.add(nums[i]);
+            }
+            
+            if (i >= x) {
+                int out = nums[i - x];
+                if (lower.map.containsKey(out)) {
+                    lower.remove(out);
+                } else {
+                    upper.remove(out);
+                }
+            }
+            
+            if (lower.size < upper.size) {
+                int val = upper.firstKey();
+                upper.remove(val);
+                lower.add(val);
+            } else if (lower.size - upper.size > 1) {
+                int val = lower.lastKey();
+                lower.remove(val);
+                upper.add(val);
+            }
+            
+            if (i >= x - 1) {
+                long median = lower.lastKey();
+                long ops = (median * lower.size - lower.sum) + (upper.sum - median * upper.size);
+                minOps.add(ops);
+            }
+        }
+        
+        Long[][] mem = new Long[n + 1][k + 1];
+        return solve(0, k, nums, x, minOps, mem);
+    }
+
+    private long solve(int i, int kLeft, int[] nums, int x, List<Long> minOps, Long[][] mem) {
+        if (kLeft == 0) return 0;
+        if (i > nums.length - x * kLeft) return Long.MAX_VALUE / 2;
+        if (mem[i][kLeft] != null) return mem[i][kLeft];
+        
+        long skip = solve(i + 1, kLeft, nums, x, minOps, mem);
+        long pick = minOps.get(i) + solve(i + x, kLeft - 1, nums, x, minOps, mem);
+        
+        return mem[i][kLeft] = Math.min(skip, pick);
+    }
+}
