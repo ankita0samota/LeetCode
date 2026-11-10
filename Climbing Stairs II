@@ -1,1 +1,30 @@
-
+public class Solution {
+    public int climbStairs(int n, int[] costs) {
+        int[] dp = new int[n + 1];
+        
+        for (int i = 1; i <= n; i++) {
+            int minCost = Integer.MAX_VALUE;
+            
+            // Check jumps from i - 1, i - 2, and i - 3
+            if (i - 1 >= 0) {
+                int prevCost = (i - 1 == 0) ? 0 : dp[i - 1];
+                int jumpCost = costs[i - 1] + (i - (i - 1)) * (i - (i - 1));
+                minCost = Math.min(minCost, prevCost + jumpCost);
+            }
+            if (i - 2 >= 0) {
+                int prevCost = (i - 2 == 0) ? 0 : dp[i - 2];
+                int jumpCost = costs[i - 1] + (i - (i - 2)) * (i - (i - 2));
+                minCost = Math.min(minCost, prevCost + jumpCost);
+            }
+            if (i - 3 >= 0) {
+                int prevCost = (i - 3 == 0) ? 0 : dp[i - 3];
+                int jumpCost = costs[i - 1] + (i - (i - 3)) * (i - (i - 3));
+                minCost = Math.min(minCost, prevCost + jumpCost);
+            }
+            
+            dp[i] = minCost;
+        }
+        
+        return dp[n];
+    }
+}
