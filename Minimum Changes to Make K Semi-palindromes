@@ -1,1 +1,68 @@
+import java.util.Arrays;
 
+public class Solution {
+    private int[][] cost;
+    private int[][] memo;
+    private int n;
+
+    public int minimumChanges(String s, int k) {
+        n = s.length();
+        char[] arr = s.toCharArray();
+        
+        cost = new int[n][n];
+        for (int len = 1; len <= n; len++) {
+            for (int i = 0; i <= n - len; i++) {
+                int j = i + len - 1;
+                cost[i][j] = getMinChanges(arr, i, j);
+            }
+        }
+        
+        memo = new int[n][k + 1];
+        for (int[] row : memo) {
+            Arrays.fill(row, -1);
+        }
+        
+        return dp(0, k);
+    }
+
+    private int getMinChanges(char[] arr, int l, int r) {
+        int len = r - l + 1;
+        int totalChanges = Integer.MAX_VALUE;
+        
+        for (int d = 1; d < len; d++) {
+            if (len % d == 0) {
+                int currentChanges = 0;
+                for (int start = 0; start < d; start++) {
+                    int left = l + start;
+                    int right = l + len - d + start;
+                    while (left < right) {
+                        if (arr[left] != arr[right]) {
+                            currentChanges++;
+                        }
+                        left += d;
+                        right -= d;
+                    }
+                }
+                totalChanges = Math.min(totalChanges, currentChanges);
+            }
+        }
+        return totalChanges;
+    }
+
+    private int dp(int idx, int remK) {
+        if (remK == 1) {
+            return cost[idx][n - 1];
+        }
+        if (memo[idx][remK] != -1) {
+            return memo[idx][remK];
+        }
+        
+        int minChanges = Integer.MAX_VALUE;
+        for (int nextIdx = idx + 1; nextIdx <= n - remK + 1; nextIdx++) {
+            int changes = cost[idx][nextIdx - 1] + dp(nextIdx, remK - 1);
+            minChanges = Math.min(minChanges, changes);
+        }
+        
+        return memo[idx][remK] = minChanges;
+    }
+}
