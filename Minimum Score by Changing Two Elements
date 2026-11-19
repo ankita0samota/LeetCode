@@ -1,1 +1,18 @@
+import java.util.Arrays;
 
+public class Solution {
+    public int minimizeSum(int[] nums) {
+        int n = nums.length;
+        if (n <= 3) {
+            return 0;
+        }
+        
+        Arrays.sort(nums);
+        
+        int dropTwoMax = nums[n - 3] - nums[0];
+        int dropTwoMin = nums[n - 1] - nums[2];
+        int dropOneEach = nums[n - 2] - nums[1];
+        
+        return Math.min(dropTwoMax, Math.min(dropTwoMin, dropOneEach));
+    }
+}
