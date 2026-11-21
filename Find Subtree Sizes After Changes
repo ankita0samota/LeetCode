@@ -1,1 +1,65 @@
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
+public class Solution {
+    public int[] findSubtreeSizes(int[] parent, String s) {
+        int n = s.length();
+        List<List<Integer>> adj = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) {
+            adj.add(new ArrayList<>());
+        }
+        for (int i = 1; i < n; i++) {
+            adj.get(parent[i]).add(i);
+        }
+
+        int[] newParent = Arrays.copyOf(parent, n);
+        int[] lastCharNode = new int[26];
+        Arrays.fill(lastCharNode, -1);
+
+        assignNewParents(0, s, adj, newParent, lastCharNode);
+
+        List<List<Integer>> newAdj = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) {
+            newAdj.add(new ArrayList<>());
+        }
+        for (int i = 1; i < n; i++) {
+            newAdj.get(newParent[i]).add(i);
+        }
+
+        int[] ans = new int[n];
+        computeSubtreeSizes(0, newAdj, ans);
+        return ans;
+    }
+
+    private void assignNewParents(
+            int u,
+            String s,
+            List<List<Integer>> adj,
+            int[] newParent,
+            int[] lastCharNode
+    ) {
+        int c = s.charAt(u) - 'a';
+        if (lastCharNode[c] != -1) {
+            newParent[u] = lastCharNode[c];
+        }
+
+        int prev = lastCharNode[c];
+        lastCharNode[c] = u;
+
+        for (int v : adj.get(u)) {
+            assignNewParents(v, s, adj, newParent, lastCharNode);
+        }
+
+        lastCharNode[c] = prev;
+    }
+
+    private int computeSubtreeSizes(int u, List<List<Integer>> newAdj, int[] ans) {
+        int size = 1;
+        for (int v : newAdj.get(u)) {
+            size += computeSubtreeSizes(v, newAdj, ans);
+        }
+        ans[u] = size;
+        return size;
+    }
+}
