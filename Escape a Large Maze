@@ -1,1 +1,61 @@
+import java.util.ArrayDeque;
+import java.util.HashSet;
+import java.util.Queue;
+import java.util.Set;
 
+public class Solution {
+    private static final long BOUND = 1_000_000L;
+    private static final int[][] DIRS = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+
+    public boolean isEscapePossible(int[][] blocked, int[] source, int[] target) {
+        if (blocked == null || blocked.length <= 1) {
+            return true;
+        }
+
+        Set<Long> blockedSet = new HashSet<>(blocked.length * 2);
+        for (int[] b : blocked) {
+            blockedSet.add(encode(b[0], b[1]));
+        }
+
+        int maxVisited = blocked.length * (blocked.length - 1) / 2;
+        return bfs(source, target, blockedSet, maxVisited) && bfs(target, source, blockedSet, maxVisited);
+    }
+
+    private boolean bfs(int[] start, int[] goal, Set<Long> blockedSet, int maxVisited) {
+        Set<Long> visited = new HashSet<>();
+        Queue<int[]> queue = new ArrayDeque<>();
+
+        long startKey = encode(start[0], start[1]);
+        long goalKey = encode(goal[0], goal[1]);
+
+        visited.add(startKey);
+        queue.offer(start);
+
+        while (!queue.isEmpty()) {
+            int[] curr = queue.poll();
+            for (int[] d : DIRS) {
+                int nr = curr[0] + d[0];
+                int nc = curr[1] + d[1];
+                if (nr < 0 || nr >= BOUND || nc < 0 || nc >= BOUND) {
+                    continue;
+                }
+                long key = encode(nr, nc);
+                if (key == goalKey) {
+                    return true;
+                }
+                if (!blockedSet.contains(key) && visited.add(key)) {
+                    if (visited.size() > maxVisited) {
+                        return true;
+                    }
+                    queue.offer(new int[]{nr, nc});
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private long encode(int r, int c) {
+        return ((long) r << 20) | (long) c;
+    }
+}
