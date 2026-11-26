@@ -1,1 +1,65 @@
+import java.util.ArrayDeque;
+import java.util.HashSet;
+import java.util.Queue;
+import java.util.Set;
 
+public class Solution {
+    public int minimumJumps(int[] forbidden, int a, int b, int x) {
+        if (x == 0) {
+            return 0;
+        }
+
+        Set<Integer> forbiddenSet = new HashSet<>();
+        int maxForbidden = 0;
+        for (int pos : forbidden) {
+            forbiddenSet.add(pos);
+            if (pos > maxForbidden) {
+                maxForbidden = pos;
+            }
+        }
+
+        int upperBound = Math.max(maxForbidden, x) + a + b;
+
+        Set<Long> visited = new HashSet<>();
+        Queue<int[]> queue = new ArrayDeque<>();
+
+        visited.add(encode(0, 0));
+        queue.offer(new int[]{0, 0});
+
+        int jumps = 0;
+
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            for (int i = 0; i < size; i++) {
+                int[] curr = queue.poll();
+                int pos = curr[0];
+                int backStreak = curr[1];
+
+                if (pos == x) {
+                    return jumps;
+                }
+
+                int forward = pos + a;
+                long forwardKey = encode(forward, 0);
+                if (forward <= upperBound && !forbiddenSet.contains(forward) && visited.add(forwardKey)) {
+                    queue.offer(new int[]{forward, 0});
+                }
+
+                if (backStreak == 0) {
+                    int backward = pos - b;
+                    long backwardKey = encode(backward, 1);
+                    if (backward >= 0 && !forbiddenSet.contains(backward) && visited.add(backwardKey)) {
+                        queue.offer(new int[]{backward, 1});
+                    }
+                }
+            }
+            jumps++;
+        }
+
+        return -1;
+    }
+
+    private long encode(int pos, int backStreak) {
+        return (((long) pos) << 1) | (backStreak & 1L);
+    }
+}
