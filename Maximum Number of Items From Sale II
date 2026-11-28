@@ -1,1 +1,61 @@
+import java.util.Map;
+import java.util.TreeMap;
 
+public class Solution {
+    public int maximumSaleItems(int[][] items, int budget) {
+        int n = items.length;
+        int minPrice = Integer.MAX_VALUE;
+        int maxFactor = 0;
+
+        for (int[] item : items) {
+            if (item[1] < minPrice) {
+                minPrice = item[1];
+            }
+            if (item[0] > maxFactor) {
+                maxFactor = item[0];
+            }
+        }
+
+        int[] freq = new int[maxFactor + 1];
+        for (int[] item : items) {
+            freq[item[0]]++;
+        }
+
+        for (int f = 1; f <= maxFactor; f++) {
+            if (freq[f] > 0) {
+                for (int mult = 2 * f; mult <= maxFactor; mult += f) {
+                    freq[f] += freq[mult];
+                }
+            }
+        }
+
+        TreeMap<Long, Long> costToBoostCount = new TreeMap<>();
+        long limitPrice = 2L * minPrice;
+
+        for (int[] item : items) {
+            int factor = item[0];
+            long price = item[1];
+            long boostCount = freq[factor] - 1L;
+
+            if (boostCount > 0 && price <= limitPrice) {
+                costToBoostCount.merge(price, boostCount, Long::sum);
+            }
+        }
+
+        long remBudget = budget;
+        long totalItems = 0;
+
+        for (Map.Entry<Long, Long> entry : costToBoostCount.entrySet()) {
+            long price = entry.getKey();
+            long available = entry.getValue();
+            long take = Math.min(available, remBudget / price);
+
+            totalItems += 2L * take;
+            remBudget -= take * price;
+        }
+
+        totalItems += remBudget / minPrice;
+
+        return (int) totalItems;
+    }
+}
